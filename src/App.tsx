@@ -15,6 +15,7 @@ import AttendancePage from "./pages/AttendancePage";
 import FeesPage from "./pages/FeesPage";
 import ReportsPage from "./pages/ReportsPage";
 import ProfilePage from "./pages/ProfilePage";
+import UsersPage from "./pages/UsersPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ function AppRoutes() {
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
       <Route path="/students" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><StudentsPage /></ProtectedRoute>} />
+      <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><UsersPage /></ProtectedRoute>} />
       <Route path="/attendance" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><AttendancePage /></ProtectedRoute>} />
       <Route path="/fees" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><FeesPage /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><ReportsPage /></ProtectedRoute>} />

@@ -8,11 +8,13 @@ import {
   BarChart3,
   UserCircle,
   LogOut,
+  Shield,
 } from 'lucide-react';
 
 const adminLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/students', label: 'Students', icon: Users },
+  { to: '/users', label: 'Users & Roles', icon: Shield },
   { to: '/attendance', label: 'Attendance', icon: ClipboardCheck },
   { to: '/fees', label: 'Fees', icon: DollarSign },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
