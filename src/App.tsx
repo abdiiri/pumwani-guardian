@@ -27,14 +27,19 @@ function DashboardRouter() {
 }
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Loading...</p></div>;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (allowedRoles && user && !allowedRoles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Loading...</p></div>;
+  }
 
   return (
     <Routes>

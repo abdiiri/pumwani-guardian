@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function FeesPage() {
   const { user } = useAuth();
@@ -19,9 +20,10 @@ export default function FeesPage() {
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingStudentId && amount) {
-      updateFee(editingStudentId, parseInt(amount));
+      await updateFee(editingStudentId, parseInt(amount));
+      toast.success('Payment updated');
       setEditingStudentId(null);
       setAmount('');
     }

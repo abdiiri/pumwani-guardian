@@ -12,9 +12,9 @@ export default function AttendancePage() {
 
   const todayAttendance = attendance.filter(a => a.date === today);
 
-  const handleMark = (studentId: string, status: 'present' | 'absent') => {
+  const handleMark = async (studentId: string, status: 'present' | 'absent') => {
     if (!isAdmin) return;
-    setAttendance(studentId, today, status);
+    await setAttendance(studentId, today, status);
     setFlashId(`${studentId}-${status}`);
     setTimeout(() => setFlashId(null), 200);
   };
