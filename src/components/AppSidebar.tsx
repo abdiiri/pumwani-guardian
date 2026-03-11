@@ -9,6 +9,7 @@ import {
   UserCircle,
   LogOut,
   Shield,
+  GraduationCap,
 } from 'lucide-react';
 
 const adminLinks = [
@@ -42,25 +43,35 @@ export function AppSidebar() {
   const links = user.role === 'admin' ? adminLinks : user.role === 'manager' ? managerLinks : studentLinks;
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-60 border-r bg-card flex flex-col">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-60 bg-sidebar flex flex-col">
       {/* Header */}
-      <div className="px-6 py-6 border-b">
-        <h1 className="font-heading text-base font-bold tracking-tight text-foreground">
-          Pumwani Boys
-        </h1>
-        <p className="text-xs text-muted-foreground mt-0.5 font-body">
-          Record Management
-        </p>
+      <div className="px-6 py-6 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-sidebar-primary flex items-center justify-center">
+            <GraduationCap className="h-5 w-5 text-sidebar-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="font-heading text-sm font-bold tracking-tight text-sidebar-foreground">
+              Pumwani Boys
+            </h1>
+            <p className="text-[11px] text-sidebar-muted font-body">
+              Record Management
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-muted">
+          Menu
+        </p>
         {links.map(link => (
           <NavLink
             key={link.to}
             to={link.to}
             end={link.to === '/dashboard'}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-muted transition-all duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             activeClassName="bg-sidebar-accent text-sidebar-accent-foreground"
           >
             <link.icon className="h-4 w-4 flex-shrink-0" />
@@ -70,14 +81,21 @@ export function AppSidebar() {
       </nav>
 
       {/* User & Logout */}
-      <div className="border-t px-4 py-4">
-        <div className="mb-3">
-          <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-          <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+      <div className="border-t border-sidebar-border px-4 py-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
+            <span className="text-xs font-bold text-sidebar-primary">
+              {user.name?.charAt(0)?.toUpperCase() || 'U'}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</p>
+            <p className="text-[11px] text-sidebar-muted capitalize">{user.role}</p>
+          </div>
         </div>
         <button
           onClick={logout}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors w-full"
+          className="flex items-center gap-2 text-sm text-sidebar-muted hover:text-destructive transition-colors w-full px-1"
         >
           <LogOut className="h-4 w-4" />
           <span>Sign out</span>
