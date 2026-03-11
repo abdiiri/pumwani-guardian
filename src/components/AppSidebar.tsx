@@ -8,6 +8,7 @@ import {
   BarChart3,
   UserCircle,
   LogOut,
+  Shield,
 } from 'lucide-react';
 
 const adminLinks = [
