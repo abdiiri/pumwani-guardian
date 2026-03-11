@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,47 +6,63 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
 
-    --card: 240 14% 98%;
-    --card-foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 220 45% 42%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 72%;
 
-    --secondary: 240 14% 98%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 215 20% 93%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 240 14% 98%;
-    --muted-foreground: 0 0% 63%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 240 14% 98%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 217 91% 96%;
+    --accent-foreground: 217 91% 40%;
 
-    --destructive: 354 70% 54%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 145 63% 42%;
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
-    --border: 0 0% 92%;
-    --input: 0 0% 92%;
-    --ring: 220 45% 42%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --radius: 0.375rem;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
 
-    --sidebar-background: 240 14% 98%;
-    --sidebar-foreground: 0 0% 10%;
-    --sidebar-primary: 220 45% 42%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 45% 95%;
-    --sidebar-accent-foreground: 220 45% 42%;
-    --sidebar-border: 0 0% 92%;
-    --sidebar-ring: 220 45% 42%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 217 91% 60%;
+    --sidebar-muted: 215 20% 65%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 72%));
+    --gradient-success: linear-gradient(135deg, hsl(160 84% 39%), hsl(160 84% 50%));
+    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%), hsl(38 92% 62%));
+    --gradient-destructive: linear-gradient(135deg, hsl(0 72% 51%), hsl(0 72% 63%));
+
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-elevated: 0 10px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
 
     --font-heading: 'Inter', system-ui, sans-serif;
     --font-body: 'Source Sans 3', 'Inter', system-ui, sans-serif;
@@ -71,27 +87,33 @@
 
 /* Status pills */
 .status-present {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
-  background-color: hsl(var(--success) / 0.1);
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  background-color: hsl(var(--success) / 0.12);
   color: hsl(var(--success));
 }
 
 .status-absent {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
-  background-color: hsl(var(--destructive) / 0.1);
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  background-color: hsl(var(--destructive) / 0.12);
   color: hsl(var(--destructive));
 }
 
 .status-paid {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
-  background-color: hsl(var(--success) / 0.1);
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  background-color: hsl(var(--success) / 0.12);
   color: hsl(var(--success));
 }
 
 .status-pending {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
-  background-color: hsl(var(--destructive) / 0.1);
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  background-color: hsl(var(--destructive) / 0.12);
   color: hsl(var(--destructive));
+}
+
+.status-partial {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  background-color: hsl(var(--warning) / 0.12);
+  color: hsl(var(--warning));
 }
 
 /* Attendance pill buttons */
@@ -140,4 +162,26 @@
   top: 0;
   z-index: 10;
   background-color: hsl(var(--card));
+}
+
+/* Stat card gradient overlays */
+.stat-card {
+  @apply relative overflow-hidden rounded-xl p-6;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.stat-card:hover {
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-2px);
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  opacity: 0.1;
+  transform: translate(30%, -30%);
 }
