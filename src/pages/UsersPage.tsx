@@ -56,12 +56,12 @@ export default function UsersPage() {
   const handleRoleChange = async (userId: string, newRole: string) => {
     setSaving(userId);
     const user = users.find(u => u.id === userId);
+    const roleValue = newRole as 'admin' | 'manager' | 'student';
 
     if (user?.currentRole) {
-      // Update existing role
       const { error } = await supabase
         .from('user_roles')
-        .update({ role: newRole })
+        .update({ role: roleValue })
         .eq('user_id', userId);
 
       if (error) {
@@ -70,10 +70,9 @@ export default function UsersPage() {
         return;
       }
     } else {
-      // Insert new role
       const { error } = await supabase
         .from('user_roles')
-        .insert({ user_id: userId, role: newRole });
+        .insert({ user_id: userId, role: roleValue } as any);
 
       if (error) {
         toast.error('Failed to assign role: ' + error.message);
