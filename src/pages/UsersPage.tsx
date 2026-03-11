@@ -130,7 +130,6 @@ export default function UsersPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="manager">Manager</SelectItem>
                             <SelectItem value="student">Student</SelectItem>
                           </SelectContent>
                         </Select>
