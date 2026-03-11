@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function StudentsPage() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function StudentsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', email: '', studentId: '', class: '', password: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const filtered = students.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -43,20 +45,36 @@ export default function StudentsPage() {
     setDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     if (editingId) {
-      updateStudent(editingId, { name: form.name, email: form.email, class: form.class });
+      await updateStudent(editingId, { name: form.name, email: form.email, class: form.class });
+      toast.success('Student updated');
     } else {
-      addStudent({
+      const result = await addStudent({
         name: form.name,
         email: form.email,
         studentId: form.studentId,
         class: form.class,
-        userId: `u${Date.now()}`,
+        password: form.password,
       });
+      if (result.success) {
+        toast.success('Student registered successfully');
+      } else {
+        toast.error(result.error || 'Failed to register student');
+        setSubmitting(false);
+        return;
+      }
     }
+    setSubmitting(false);
     setDialogOpen(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this student?')) return;
+    await deleteStudent(id);
+    toast.success('Student deleted');
   };
 
   return (
@@ -97,7 +115,7 @@ export default function StudentsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label>Password</Label>
-                      <Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required />
+                      <Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required minLength={6} />
                     </div>
                   </>
                 )}
@@ -107,7 +125,7 @@ export default function StudentsPage() {
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                  <Button type="submit">{editingId ? 'Save Changes' : 'Register'}</Button>
+                  <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Register'}</Button>
                 </div>
               </form>
             </DialogContent>
@@ -144,7 +162,7 @@ export default function StudentsPage() {
                         <button onClick={() => openEdit(student.id)} className="p-1.5 text-muted-foreground hover:text-primary transition-colors">
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => deleteStudent(student.id)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors ml-1">
+                        <button onClick={() => handleDelete(student.id)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors ml-1">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>

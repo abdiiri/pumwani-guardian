@@ -1,16 +1,43 @@
-import React, { createContext, useContext, useState } from 'react';
-import { Student, AttendanceRecord, FeeRecord } from '@/lib/types';
-import { mockStudents, mockAttendance, mockFees } from '@/lib/mock-data';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
+
+export interface Student {
+  id: string;
+  studentId: string;
+  name: string;
+  email: string;
+  class: string;
+  userId: string | null;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  studentId: string;
+  date: string;
+  status: 'present' | 'absent';
+}
+
+export interface FeeRecord {
+  id: string;
+  studentId: string;
+  amountPaid: number;
+  totalAmount: number;
+  paymentStatus: 'paid' | 'pending' | 'partial';
+  date: string;
+}
 
 interface DataContextType {
   students: Student[];
   attendance: AttendanceRecord[];
   fees: FeeRecord[];
-  addStudent: (s: Omit<Student, 'id'>) => void;
-  updateStudent: (id: string, s: Partial<Student>) => void;
-  deleteStudent: (id: string) => void;
-  setAttendance: (studentId: string, date: string, status: 'present' | 'absent') => void;
-  updateFee: (studentId: string, amountPaid: number) => void;
+  loading: boolean;
+  addStudent: (s: { name: string; email: string; studentId: string; class: string; password: string }) => Promise<{ success: boolean; error?: string }>;
+  updateStudent: (id: string, s: Partial<Student>) => Promise<void>;
+  deleteStudent: (id: string) => Promise<void>;
+  setAttendance: (studentId: string, date: string, status: 'present' | 'absent') => Promise<void>;
+  updateFee: (studentId: string, amountPaid: number) => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -22,68 +49,140 @@ export const useData = () => {
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [students, setStudents] = useState<Student[]>(mockStudents);
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>(mockAttendance);
-  const [fees, setFees] = useState<FeeRecord[]>(mockFees);
+  const { isAuthenticated } = useAuth();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [attendance, setAttendanceState] = useState<AttendanceRecord[]>([]);
+  const [fees, setFees] = useState<FeeRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addStudent = (s: Omit<Student, 'id'>) => {
-    const newStudent: Student = { ...s, id: `u${Date.now()}` };
-    setStudents(prev => [...prev, newStudent]);
-    // Create a pending fee record
-    setFees(prev => [...prev, {
-      id: `f${Date.now()}`,
-      studentId: s.studentId,
-      amountPaid: 0,
-      totalAmount: 45000,
-      paymentStatus: 'pending',
-      date: '',
-    }]);
-  };
+  const fetchAll = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setLoading(true);
 
-  const updateStudent = (id: string, updates: Partial<Student>) => {
-    setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-  };
+    const [studentsRes, attendanceRes, feesRes] = await Promise.all([
+      supabase.from('students').select('*'),
+      supabase.from('attendance').select('*'),
+      supabase.from('fees').select('*'),
+    ]);
 
-  const deleteStudent = (id: string) => {
-    const student = students.find(s => s.id === id);
-    if (student) {
-      setStudents(prev => prev.filter(s => s.id !== id));
-      setAttendance(prev => prev.filter(a => a.studentId !== student.studentId));
-      setFees(prev => prev.filter(f => f.studentId !== student.studentId));
+    if (studentsRes.data) {
+      setStudents(studentsRes.data.map((s: any) => ({
+        id: s.id,
+        studentId: s.student_id,
+        name: s.name,
+        email: s.email,
+        class: s.class,
+        userId: s.user_id,
+      })));
     }
-  };
 
-  const setAttendanceRecord = (studentId: string, date: string, status: 'present' | 'absent') => {
-    setAttendance(prev => {
-      const existing = prev.findIndex(a => a.studentId === studentId && a.date === date);
-      if (existing >= 0) {
-        const updated = [...prev];
-        updated[existing] = { ...updated[existing], status };
-        return updated;
-      }
-      return [...prev, { id: `a${Date.now()}`, studentId, date, status }];
+    if (attendanceRes.data) {
+      setAttendanceState(attendanceRes.data.map((a: any) => ({
+        id: a.id,
+        studentId: a.student_id,
+        date: a.date,
+        status: a.status as 'present' | 'absent',
+      })));
+    }
+
+    if (feesRes.data) {
+      setFees(feesRes.data.map((f: any) => ({
+        id: f.id,
+        studentId: f.student_id,
+        amountPaid: Number(f.amount_paid),
+        totalAmount: Number(f.total_amount),
+        paymentStatus: f.payment_status as 'paid' | 'pending' | 'partial',
+        date: f.date || '',
+      })));
+    }
+
+    setLoading(false);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  const addStudent = async (s: { name: string; email: string; studentId: string; class: string; password: string }) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) return { success: false, error: 'Not authenticated' };
+
+    const res = await supabase.functions.invoke('create-user', {
+      body: {
+        email: s.email,
+        password: s.password,
+        name: s.name,
+        role: 'student',
+        studentId: s.studentId,
+        studentClass: s.class,
+      },
     });
+
+    if (res.error || res.data?.error) {
+      return { success: false, error: res.data?.error || res.error?.message || 'Failed to create student' };
+    }
+
+    await fetchAll();
+    return { success: true };
   };
 
-  const updateFee = (studentId: string, amountPaid: number) => {
-    setFees(prev => prev.map(f => {
-      if (f.studentId !== studentId) return f;
-      const newAmount = amountPaid;
-      return {
-        ...f,
-        amountPaid: newAmount,
-        paymentStatus: newAmount >= f.totalAmount ? 'paid' : newAmount > 0 ? 'partial' : 'pending',
-        date: new Date().toISOString().split('T')[0],
-      };
-    }));
+  const updateStudent = async (id: string, updates: Partial<Student>) => {
+    const dbUpdates: any = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.email !== undefined) dbUpdates.email = updates.email;
+    if (updates.class !== undefined) dbUpdates.class = updates.class;
+
+    await supabase.from('students').update(dbUpdates).eq('id', id);
+    await fetchAll();
+  };
+
+  const deleteStudent = async (id: string) => {
+    const student = students.find(s => s.id === id);
+    if (!student || !student.userId) return;
+
+    await supabase.functions.invoke('delete-user', {
+      body: { userId: student.userId },
+    });
+
+    await fetchAll();
+  };
+
+  const setAttendanceRecord = async (studentId: string, date: string, status: 'present' | 'absent') => {
+    // Upsert attendance
+    const existing = attendance.find(a => a.studentId === studentId && a.date === date);
+    if (existing) {
+      await supabase.from('attendance').update({ status }).eq('id', existing.id);
+    } else {
+      await supabase.from('attendance').insert({
+        student_id: studentId,
+        date,
+        status,
+      });
+    }
+    await fetchAll();
+  };
+
+  const updateFee = async (studentId: string, amountPaid: number) => {
+    const fee = fees.find(f => f.studentId === studentId);
+    if (!fee) return;
+
+    const paymentStatus = amountPaid >= fee.totalAmount ? 'paid' : amountPaid > 0 ? 'partial' : 'pending';
+    await supabase.from('fees').update({
+      amount_paid: amountPaid,
+      payment_status: paymentStatus,
+      date: new Date().toISOString().split('T')[0],
+    }).eq('id', fee.id);
+
+    await fetchAll();
   };
 
   return (
     <DataContext.Provider value={{
-      students, attendance, fees,
+      students, attendance, fees, loading,
       addStudent, updateStudent, deleteStudent,
       setAttendance: setAttendanceRecord,
-      updateFee,
+      updateFee, refresh: fetchAll,
     }}>
       {children}
     </DataContext.Provider>

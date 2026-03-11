@@ -11,20 +11,23 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim()) {
-      setError('Please enter your email address.');
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter your email and password.');
       return;
     }
-    const success = login(email.trim(), password);
-    if (success) {
+    setLoading(true);
+    const result = await login(email.trim(), password);
+    if (result.success) {
       navigate('/dashboard');
     } else {
-      setError('Invalid email or password.');
+      setError(result.error || 'Invalid email or password.');
     }
+    setLoading(false);
   };
 
   return (
@@ -76,20 +79,15 @@ export default function LoginPage() {
               <p className="text-sm text-destructive">{error}</p>
             )}
 
-            <Button type="submit" className="w-full h-10">
-              Sign in
+            <Button type="submit" className="w-full h-10" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
 
           <div className="mt-8 pt-6 border-t">
             <p className="text-xs text-muted-foreground">
-              Demo accounts (any password):
+              Contact your administrator for login credentials.
             </p>
-            <ul className="mt-2 space-y-1 text-xs text-muted-foreground font-body">
-              <li><span className="font-medium text-foreground">Admin:</span> admin@pumwani.ac.ke</li>
-              <li><span className="font-medium text-foreground">Manager:</span> manager@pumwani.ac.ke</li>
-              <li><span className="font-medium text-foreground">Student:</span> james@pumwani.ac.ke</li>
-            </ul>
           </div>
         </div>
       </div>
