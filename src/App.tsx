@@ -15,6 +15,7 @@ import AttendancePage from "./pages/AttendancePage";
 import FeesPage from "./pages/FeesPage";
 import ReportsPage from "./pages/ReportsPage";
 import ProfilePage from "./pages/ProfilePage";
+import UsersPage from "./pages/UsersPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
