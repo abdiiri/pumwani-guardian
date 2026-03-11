@@ -8,7 +8,6 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { DataProvider } from "@/contexts/DataContext";
 import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
-import ManagerDashboard from "./pages/ManagerDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentsPage from "./pages/StudentsPage";
 import AttendancePage from "./pages/AttendancePage";
@@ -24,7 +23,6 @@ function DashboardRouter() {
   const { user } = useAuth();
   if (!user) return null;
   if (user.role === 'admin') return <AdminDashboard />;
-  if (user.role === 'manager') return <ManagerDashboard />;
   return <StudentDashboard />;
 }
 
@@ -48,11 +46,11 @@ function AppRoutes() {
       <Route path="/setup" element={<SetupPage />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
-      <Route path="/students" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><StudentsPage /></ProtectedRoute>} />
+      <Route path="/students" element={<ProtectedRoute allowedRoles={['admin']}><StudentsPage /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><UsersPage /></ProtectedRoute>} />
-      <Route path="/attendance" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><AttendancePage /></ProtectedRoute>} />
-      <Route path="/fees" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><FeesPage /></ProtectedRoute>} />
-      <Route path="/reports" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><ReportsPage /></ProtectedRoute>} />
+      <Route path="/attendance" element={<ProtectedRoute allowedRoles={['admin']}><AttendancePage /></ProtectedRoute>} />
+      <Route path="/fees" element={<ProtectedRoute allowedRoles={['admin']}><FeesPage /></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute allowedRoles={['admin']}><ReportsPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
       <Route path="*" element={<NotFound />} />

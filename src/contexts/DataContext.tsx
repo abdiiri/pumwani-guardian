@@ -27,10 +27,19 @@ export interface FeeRecord {
   date: string;
 }
 
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  createdBy: string;
+  createdAt: string;
+}
+
 interface DataContextType {
   students: Student[];
   attendance: AttendanceRecord[];
   fees: FeeRecord[];
+  announcements: Announcement[];
   loading: boolean;
   addStudent: (s: { name: string; email: string; studentId: string; class: string; password: string }) => Promise<{ success: boolean; error?: string }>;
   updateStudent: (id: string, s: Partial<Student>) => Promise<void>;
@@ -53,16 +62,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [students, setStudents] = useState<Student[]>([]);
   const [attendance, setAttendanceState] = useState<AttendanceRecord[]>([]);
   const [fees, setFees] = useState<FeeRecord[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchAll = useCallback(async () => {
     if (!isAuthenticated) return;
     setLoading(true);
 
-    const [studentsRes, attendanceRes, feesRes] = await Promise.all([
+    const [studentsRes, attendanceRes, feesRes, announcementsRes] = await Promise.all([
       supabase.from('students').select('*'),
       supabase.from('attendance').select('*'),
       supabase.from('fees').select('*'),
+      supabase.from('announcements').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (studentsRes.data) {
@@ -93,6 +104,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         totalAmount: Number(f.total_amount),
         paymentStatus: f.payment_status as 'paid' | 'pending' | 'partial',
         date: f.date || '',
+      })));
+    }
+
+    if (announcementsRes.data) {
+      setAnnouncements(announcementsRes.data.map((a: any) => ({
+        id: a.id,
+        title: a.title,
+        content: a.content,
+        createdBy: a.created_by,
+        createdAt: a.created_at,
       })));
     }
 
@@ -149,7 +170,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const setAttendanceRecord = async (studentId: string, date: string, status: 'present' | 'absent') => {
-    // Upsert attendance
     const existing = attendance.find(a => a.studentId === studentId && a.date === date);
     if (existing) {
       await supabase.from('attendance').update({ status }).eq('id', existing.id);
@@ -179,7 +199,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <DataContext.Provider value={{
-      students, attendance, fees, loading,
+      students, attendance, fees, announcements, loading,
       addStudent, updateStudent, deleteStudent,
       setAttendance: setAttendanceRecord,
       updateFee, refresh: fetchAll,
