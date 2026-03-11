@@ -94,7 +94,7 @@ export default function StudentsPage() {
                 Add Student
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingId ? 'Edit Student' : 'Register Student'}</DialogTitle>
               </DialogHeader>
