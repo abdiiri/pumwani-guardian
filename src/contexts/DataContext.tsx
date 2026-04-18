@@ -41,7 +41,7 @@ interface DataContextType {
   fees: FeeRecord[];
   announcements: Announcement[];
   loading: boolean;
-  addStudent: (s: { name: string; email: string; studentId: string; class: string; password: string }) => Promise<{ success: boolean; error?: string }>;
+  addStudent: (s: { name: string; username: string; studentId: string; class: string; password: string }) => Promise<{ success: boolean; error?: string }>;
   updateStudent: (id: string, s: Partial<Student>) => Promise<void>;
   deleteStudent: (id: string) => Promise<void>;
   setAttendance: (studentId: string, date: string, status: 'present' | 'absent') => Promise<void>;
@@ -124,14 +124,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchAll();
   }, [fetchAll]);
 
-  const addStudent = async (s: { name: string; email: string; studentId: string; class: string; password: string }) => {
+  const addStudent = async (s: { name: string; username: string; studentId: string; class: string; password: string }) => {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData.session?.access_token;
     if (!token) return { success: false, error: 'Not authenticated' };
 
     const res = await supabase.functions.invoke('create-user', {
       body: {
-        email: s.email,
+        username: s.username,
         password: s.password,
         name: s.name,
         role: 'student',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { useData } from '@/contexts/DataContext';
-import { Users, UserCheck, UserX, DollarSign, Megaphone, Plus, Trash2 } from 'lucide-react';
+import { Users, UserCheck, UserX, DollarSign, Megaphone, Plus, Trash2, Download } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import * as XLSX from 'xlsx';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -78,8 +79,63 @@ export default function AdminDashboard() {
     await refresh();
   };
 
+  const handleExportExcel = () => {
+    const wb = XLSX.utils.book_new();
+
+    const studentsSheet = XLSX.utils.json_to_sheet(
+      students.map(s => ({
+        'Student ID': s.studentId,
+        'Name': s.name,
+        'Username': s.email.split('@')[0],
+        'Class': s.class,
+      }))
+    );
+    XLSX.utils.book_append_sheet(wb, studentsSheet, 'Students');
+
+    const attendanceSheet = XLSX.utils.json_to_sheet(
+      attendance.map(a => {
+        const st = students.find(s => s.studentId === a.studentId);
+        return {
+          'Date': a.date,
+          'Student ID': a.studentId,
+          'Name': st?.name || '',
+          'Class': st?.class || '',
+          'Status': a.status,
+        };
+      })
+    );
+    XLSX.utils.book_append_sheet(wb, attendanceSheet, 'Attendance');
+
+    const feesSheet = XLSX.utils.json_to_sheet(
+      fees.map(f => {
+        const st = students.find(s => s.studentId === f.studentId);
+        return {
+          'Student ID': f.studentId,
+          'Name': st?.name || '',
+          'Class': st?.class || '',
+          'Total (KES)': f.totalAmount,
+          'Paid (KES)': f.amountPaid,
+          'Balance (KES)': f.totalAmount - f.amountPaid,
+          'Status': f.paymentStatus,
+          'Last Payment': f.date,
+        };
+      })
+    );
+    XLSX.utils.book_append_sheet(wb, feesSheet, 'Fees');
+
+    const stamp = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `pumwani-records-${stamp}.xlsx`);
+    toast.success('Excel file downloaded');
+  };
+
   return (
     <DashboardLayout title="Dashboard" subtitle="Today's overview">
+      <div className="flex justify-end mb-4">
+        <Button onClick={handleExportExcel} size="sm" variant="outline" className="gap-1.5">
+          <Download className="h-4 w-4" /> Download Excel
+        </Button>
+      </div>
+
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard icon={Users} label="Total Students" value={students.length} gradient="bg-gradient-to-br from-primary to-primary-glow" />

@@ -50,7 +50,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, password, name, role, studentId, studentClass } = await req.json();
+    const body = await req.json();
+    const { password, name, role, studentId, studentClass, username } = body;
+    let { email } = body;
+
+    // Students can use a username — convert to a synthetic email so Supabase Auth accepts it
+    if (!email && username) {
+      email = `${String(username).toLowerCase()}@students.pumwani.local`;
+    }
 
     if (!email || !password || !name || !role) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -122,7 +129,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

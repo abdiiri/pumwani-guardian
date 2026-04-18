@@ -22,7 +22,7 @@ export default function StudentsPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', email: '', studentId: '', class: '', password: '' });
+  const [form, setForm] = useState({ name: '', username: '', studentId: '', class: '', password: '' });
   const [submitting, setSubmitting] = useState(false);
 
   const filtered = students.filter(s =>
@@ -33,7 +33,7 @@ export default function StudentsPage() {
 
   const openAdd = () => {
     setEditingId(null);
-    setForm({ name: '', email: '', studentId: '', class: '', password: '' });
+    setForm({ name: '', username: '', studentId: '', class: '', password: '' });
     setDialogOpen(true);
   };
 
@@ -41,7 +41,7 @@ export default function StudentsPage() {
     const s = students.find(st => st.id === id);
     if (!s) return;
     setEditingId(id);
-    setForm({ name: s.name, email: s.email, studentId: s.studentId, class: s.class, password: '' });
+    setForm({ name: s.name, username: '', studentId: s.studentId, class: s.class, password: '' });
     setDialogOpen(true);
   };
 
@@ -49,12 +49,12 @@ export default function StudentsPage() {
     e.preventDefault();
     setSubmitting(true);
     if (editingId) {
-      await updateStudent(editingId, { name: form.name, email: form.email, class: form.class });
+      await updateStudent(editingId, { name: form.name, class: form.class });
       toast.success('Student updated');
     } else {
       const result = await addStudent({
         name: form.name,
-        email: form.email,
+        username: form.username.trim().toLowerCase(),
         studentId: form.studentId,
         class: form.class,
         password: form.password,
@@ -103,15 +103,15 @@ export default function StudentsPage() {
                   <Label>Name</Label>
                   <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
                 </div>
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
-                </div>
                 {!editingId && (
                   <>
                     <div className="space-y-2">
+                      <Label>Username (login)</Label>
+                      <Input value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} required pattern="[a-zA-Z0-9_.-]+" title="Letters, numbers, dots, dashes, underscores" />
+                    </div>
+                    <div className="space-y-2">
                       <Label>Student ID</Label>
-                      <Input value={form.studentId} onChange={e => setForm(f => ({ ...f, studentId: e.target.value }))} required placeholder="e.g. STU009" />
+                      <Input value={form.studentId} onChange={e => setForm(f => ({ ...f, studentId: e.target.value }))} required />
                     </div>
                     <div className="space-y-2">
                       <Label>Password</Label>
@@ -140,7 +140,7 @@ export default function StudentsPage() {
               <tr className="border-b">
                 <th className="text-left px-6 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">ID</th>
                 <th className="text-left px-6 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Name</th>
-                <th className="text-left px-6 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Email</th>
+                <th className="text-left px-6 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Username</th>
                 <th className="text-left px-6 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Class</th>
                 {isAdmin && (
                   <th className="text-right px-6 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
@@ -155,7 +155,7 @@ export default function StudentsPage() {
                   <tr key={student.id} className="border-b last:border-b-0 hover:bg-accent/50 transition-colors">
                     <td className="px-6 py-3 font-body">{student.studentId}</td>
                     <td className="px-6 py-3 font-medium">{student.name}</td>
-                    <td className="px-6 py-3 text-muted-foreground">{student.email}</td>
+                    <td className="px-6 py-3 text-muted-foreground font-body">{student.email.split('@')[0]}</td>
                     <td className="px-6 py-3 text-muted-foreground">{student.class}</td>
                     {isAdmin && (
                       <td className="px-6 py-3 text-right">
