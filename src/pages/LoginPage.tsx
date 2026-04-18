@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+export const STUDENT_EMAIL_DOMAIN = 'students.pumwani.local';
+
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,23 +18,25 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim() || !password.trim()) {
-      setError('Please enter your email and password.');
+    const id = identifier.trim();
+    if (!id || !password.trim()) {
+      setError('Please enter your username and password.');
       return;
     }
+    // If no @, treat as student username and append synthetic domain
+    const emailToUse = id.includes('@') ? id : `${id.toLowerCase()}@${STUDENT_EMAIL_DOMAIN}`;
     setLoading(true);
-    const result = await login(email.trim(), password);
+    const result = await login(emailToUse, password);
     if (result.success) {
       navigate('/dashboard');
     } else {
-      setError(result.error || 'Invalid email or password.');
+      setError(result.error || 'Invalid credentials.');
     }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left: Form */}
       <div className="flex-1 flex items-center justify-center px-8">
         <div className="w-full max-w-sm">
           <div className="mb-8">
@@ -46,17 +50,16 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email
+              <Label htmlFor="identifier" className="text-sm font-medium">
+                Username
               </Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@pumwani.ac.ke"
+                id="identifier"
+                type="text"
+                value={identifier}
+                onChange={e => setIdentifier(e.target.value)}
                 className="h-10"
-                autoComplete="email"
+                autoComplete="username"
               />
             </div>
 
@@ -69,15 +72,12 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
                 className="h-10"
                 autoComplete="current-password"
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Button type="submit" className="w-full h-10" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign in'}
@@ -86,13 +86,12 @@ export default function LoginPage() {
 
           <div className="mt-8 pt-6 border-t">
             <p className="text-xs text-muted-foreground">
-              Contact your administrator for login credentials.
+              Students sign in with their username. Admins sign in with email.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Right: Accent panel */}
       <div className="hidden lg:flex w-[480px] bg-primary items-center justify-center">
         <div className="text-center px-12">
           <h2 className="font-heading text-2xl font-bold text-primary-foreground">
